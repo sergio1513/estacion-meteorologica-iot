@@ -9,7 +9,6 @@ try:
 except:
     import json
 
-# datos de conexion wifi y mqtt
 ssid = "REDWIFI_uXyf"
 password = "GP3UFNDUZ5x9uUQ5"
 
@@ -17,18 +16,15 @@ mqtt_server = "broker.hivemq.com"
 client_id = "pico_sergio_proyecto"
 topic_pub = b"idc/proyecto/sergio/datos"
 
-# configurar sensores
 dht_sensor = dht.DHT11(Pin(15))
 ldr_sensor = ADC(Pin(26))
 co2_sensor = ADC(Pin(27))
 
-# configurar actuadores
 buzzer = Pin(16, Pin.OUT)
 servo = PWM(Pin(14))
 servo.freq(50)
 led_luz = Pin(17, Pin.OUT)
 
-# umbrales para las alertas
 UMBRAL_HUMEDAD = 70
 UMBRAL_LUZ_BAJA = 20000
 UMBRAL_CO2 = 12000
@@ -40,7 +36,7 @@ def mover_servo(angulo):
     duty = int(min_duty + (angulo / 180) * (max_duty - min_duty))
     servo.duty_u16(duty)
 
-# conectar a la red wifi
+# conectar wifi
 def conectar_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -66,12 +62,11 @@ def pitar_buzzer_3s():
     time.sleep(3)
     buzzer.value(0)
 
-# apagar todo al inicio
+
 buzzer.value(0)
 led_luz.value(0)
 mover_servo(0)
 
-# iniciar conexiones
 conectar_wifi()
 client = conectar_mqtt()
 
@@ -124,13 +119,13 @@ try:
             else:
                 led_luz.value(0)
 
-            # estado general del confort
+            # estado general 
             if alerta_humedad or alerta_luz_baja or alerta_co2:
                 estado = "ALERTA"
             else:
                 estado = "NORMAL"
 
-            # enviar datos por mqtt en json
+           
             datos = {
                 "temperatura": temp,
                 "humedad": hum,
@@ -162,4 +157,4 @@ except KeyboardInterrupt:
     buzzer.value(0)
     led_luz.value(0)
     mover_servo(0)
-    print("Programa parado")
+    print("Programa parado")
