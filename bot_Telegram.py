@@ -10,7 +10,7 @@ TELEGRAM_TOKEN = "8826538937:AAGrzu82ijULKZ4v7UX7mTc9nWP2_8wK81M"
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_TOPIC = "idc/proyecto/sergio/datos"
 
-# guardar el ultimo dato recibido
+# guardar el ultimo dato
 ultimo_dato = {
     "temperatura": None,
     "humedad": None,
@@ -37,7 +37,6 @@ def on_message(client, userdata, msg):
     except Exception as e:
         print("Error leyendo MQTT:", e)
 
-# comando start de bienvenida
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto = (
         "Hola, soy el bot de la estación meteorológica IoT.\n\n"
