@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 scratch_extract.py
 codigo_extracted/
+MANUAL_DEL_PROGRAMADOR.md
+MANUAL_DE_USUARIO.md
+MEMORIA_IOT_SEDI.md
+*.pdf
