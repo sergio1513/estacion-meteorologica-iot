@@ -3,19 +3,14 @@ import paho.mqtt.client as mqtt
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-# -------------------------
-# Configuración del Bot de Telegram
-# -------------------------
-# Token único del bot obtenido del BotFather
+# token de telegram
 TELEGRAM_TOKEN = "8826538937:AAGrzu82ijULKZ4v7UX7mTc9nWP2_8wK81M"
 
-# -------------------------
-# Configuración del Broker MQTT
-# -------------------------
+# datos mqtt
 MQTT_BROKER = "broker.hivemq.com"
 MQTT_TOPIC = "idc/proyecto/sergio/datos"
 
-# Estructura global para almacenar la última lectura recibida de los sensores
+# guardar el ultimo dato recibido
 ultimo_dato = {
     "temperatura": None,
     "humedad": None,
@@ -26,16 +21,13 @@ ultimo_dato = {
     "estado": "SIN DATOS"
 }
 
-# -------------------------
-# Retrollamadas (Callbacks) de MQTT
-# -------------------------
-# Se ejecuta cuando el cliente se conecta exitosamente al broker MQTT
+# conectar a mqtt y suscribirse
 def on_connect(client, userdata, flags, rc):
     print("Conectado a MQTT con código:", rc)
     client.subscribe(MQTT_TOPIC)
     print("Suscrito a:", MQTT_TOPIC)
 
-# Se ejecuta cuando se recibe un nuevo mensaje en el tópico suscrito
+# al recibir mensaje se guarda en la variable
 def on_message(client, userdata, msg):
     global ultimo_dato
     try:
@@ -45,11 +37,7 @@ def on_message(client, userdata, msg):
     except Exception as e:
         print("Error leyendo MQTT:", e)
 
-# -------------------------
-# Comandos del Bot de Telegram
-# -------------------------
-
-# Comando /start: Da la bienvenida al usuario y lista los comandos disponibles
+# comando start de bienvenida
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto = (
         "Hola, soy el bot de la estación meteorológica IoT.\n\n"
@@ -63,19 +51,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(texto)
 
-# Comando /temperatura: Muestra la lectura actual de temperatura
+# comandos para consultar variables sueltas
 async def temperatura(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Temperatura: {ultimo_dato.get('temperatura')} ºC"
     )
 
-# Comando /humedad: Muestra la lectura actual de humedad relativa
 async def humedad(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Humedad: {ultimo_dato.get('humedad')} %"
     )
 
-# Comando /luz: Muestra el valor de luminosidad y su estado (normal/bajo)
 async def luz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     valor = ultimo_dato.get("luz")
     alerta = ultimo_dato.get("alerta_luz_baja")
@@ -89,7 +75,6 @@ async def luz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Luz: {valor}\nEstado: {texto_alerta}"
     )
 
-# Comando /co2: Muestra el nivel de CO2 y si el aire está limpio o cargado
 async def co2(update: Update, context: ContextTypes.DEFAULT_TYPE):
     valor = ultimo_dato.get("co2_mq135")
     alerta = ultimo_dato.get("alerta_co2")
@@ -103,13 +88,12 @@ async def co2(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"CO2/MQ135: {valor}\nEstado: {texto_alerta}"
     )
 
-# Comando /estado: Muestra si el ambiente general está en estado NORMAL o ALERTA
 async def estado(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Estado general: {ultimo_dato.get('estado')}"
     )
 
-# Comando /todo: Envía un resumen completo con el valor de todos los sensores y alertas
+# comando para ver todo junto
 async def todo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto = (
         f"Temperatura: {ultimo_dato.get('temperatura')} ºC\n"
@@ -122,21 +106,19 @@ async def todo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(texto)
 
-# -------------------------
-# Función Principal y Ejecución
-# -------------------------
+# funcion principal
 def main():
-    # Inicializar y conectar el cliente MQTT
+    # cliente mqtt
     mqtt_client = mqtt.Client()
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message
     mqtt_client.connect(MQTT_BROKER, 1883, 60)
     mqtt_client.loop_start()
 
-    # Construir la aplicación del bot de Telegram
+    # bot de telegram
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
-    # Registrar los manejadores para cada comando
+    # asociar comandos a las funciones
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("temperatura", temperatura))
     app.add_handler(CommandHandler("humedad", humedad))
